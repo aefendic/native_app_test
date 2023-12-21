@@ -2,8 +2,19 @@
 import requests
 import pandas as pd
 from datetime import datetime
+from snowflake.snowpark.context import get_active_session
 
-# get weather data
+api_key = '8b52bac71e9f6d61ca801afc28e03874'
+lat = 0
+long = 0
+units = "metric"
+
+def main():
+    weather_data = get_daily_weather(api_key, 0, 0, units)
+    if weather_data is not None:
+        print(weather_data)
+        # write_to_snowflake_table(weather_data)
+
 def get_daily_weather(api_key, lat, long, units):
     # OpenWeatherMap API endpoint for daily forecast
     endpoint = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lat}&appid={api_key}&units={units}"
@@ -29,21 +40,16 @@ def get_daily_weather(api_key, lat, long, units):
         print(f"Error details: {response.text}")
         return None
 
-# write data to a snowflake table that is pre-created
-
-
-
-api_key = '8b52bac71e9f6d61ca801afc28e03874'
-lat = 0
-long = 0
-units = "metric"
-weather_data = get_daily_weather(api_key, 0, 0, units)
-
-if weather_data is not None:
-    print(weather_data)
-
-
-
+def write_to_snowflake_table(df):
+    session = get_active_session()
+    session.write_pandas(df, 'daily_weather', auto_create_table=True, table_type="") # appends data if table exists
 
 # send the written data to snowflakes billing system
+
+if __name__ == "__main__":
+    # Call the main function when the script is run
+    main()
+
+
+
     
