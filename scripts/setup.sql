@@ -6,14 +6,15 @@
 
 CREATE APPLICATION ROLE app_public;
 CREATE SCHEMA IF NOT EXISTS weather;
-GRANT USAGE ON SCHEMA weather TO APPLICATION ROLE app_public;
+GRANT ALL ON SCHEMA weather TO APPLICATION ROLE app_public;
 
 CREATE OR ALTER VERSIONED SCHEMA versioned_schema;
 GRANT USAGE ON SCHEMA versioned_schema TO APPLICATION ROLE app_public;
 
 -- Create UDF (if using imports=() need to use a versioned schema)
 create PROCEDURE versioned_schema.WEATHER()
-returns TABLE (DATE DATE, TEMP BIGINT)
+-- returns TABLE (DATE DATE, TEMP BIGINT)
+returns string
 language python
 runtime_version = '3.8'
 packages = ('snowflake-snowpark-python', 'requests', 'pandas')
@@ -28,26 +29,12 @@ CREATE STREAMLIT versioned_schema.hello_snowflake_streamlit
   MAIN_FILE = '/display_weather.py';
 GRANT USAGE ON STREAMLIT versioned_schema.hello_snowflake_streamlit TO APPLICATION ROLE app_public;
 
+CREATE OR REPLACE PROCEDURE versioned_schema.init_app(config variant)
+  RETURNS string
+  LANGUAGE python
+  runtime_version = '3.8'
+  packages = ('snowflake-snowpark-python', 'requests')
+  imports = ('/python/init_app.py')
+  handler = 'init_app.init_app';
 
--- Callback Stored Procedure for the External Access Integraion reference
--- CREATE PROCEDURE versioned_schema.REGISTER_SINGLE_REFERENCE(ref_name STRING, operation STRING, ref_or_alias STRING)
---   RETURNS STRING
---   LANGUAGE SQL
---   AS $$
---     BEGIN
---       CASE (operation)
---         WHEN 'ADD' THEN
---           SELECT SYSTEM$SET_REFERENCE(:ref_name, :ref_or_alias);
---         WHEN 'REMOVE' THEN
---           SELECT SYSTEM$REMOVE_REFERENCE(:ref_name);
---         WHEN 'CLEAR' THEN
---           SELECT SYSTEM$REMOVE_REFERENCE(:ref_name);
---       ELSE
---         RETURN 'unknown operation: ' || operation;
---       END CASE;
---       RETURN NULL;
---     END;
---   $$;
-
--- GRANT USAGE ON PROCEDURE versioned_schema.REGISTER_SINGLE_REFERENCE(STRING, STRING, STRING)
---   TO APPLICATION ROLE app_public;
+GRANT USAGE ON PROCEDURE versioned_schema.init_app(variant) TO APPLICATION ROLE app_public;
