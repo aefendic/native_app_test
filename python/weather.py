@@ -1,11 +1,13 @@
+import _snowflake
+
 # sprocs can only take in one function
 def get_daily_weather(session):
     import requests
     import pandas as pd
     from datetime import datetime
-    from snowflake.snowpark.context import get_active_session
+    # from snowflake.snowpark.context import get_active_session
 
-    api_key = '8b52bac71e9f6d61ca801afc28e03874'
+    api_key = _snowflake.get_generic_secret_string('token')
     lat = 0
     long = 0
     units = "metric"
@@ -24,10 +26,12 @@ def get_daily_weather(session):
         temperature = data["main"]["temp"]
 
         # Create a DataFrame from the collected data and write to snowflake
-        df = pd.DataFrame({'date': [today_date], 'temp': [temperature]})
-        session = get_active_session()
-        session.write_pandas(df, 'daily_weather', schema='weather', auto_create_table=True, table_type="") # appends data if table exists
-        return "success"
+        # df = pd.DataFrame({'date': [today_date], 'temp': [temperature]})
+        # session = get_active_session()
+        # session.use_role("app_public")
+        # session.write_pandas(df, 'daily_weather', schema='weather', auto_create_table=True, table_type="") # appends data if table exists
+        # print(session)
+        return temperature
     else:
         print(f"Status code {response.status_code}")
         print(f"Error details: {response.text}")
