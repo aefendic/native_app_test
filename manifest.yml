@@ -2,17 +2,3 @@ manifest_version: 1
 artifacts:
   setup_script: scripts/setup.sql
   readme: readme.md
-
-# privileges:
-# - EXECUTE TASK:
-#     description: "Privilege to run tasks within the consumer account"
-
-# references:
-#   - open_weather_integration:
-#       label: "External_Access_Integration"
-#       description: "Allows for external API calls to be made"
-#       privileges:
-#       - USAGE
-#       object_type: API INTEGRATION
-#       multi_valued: false
-#       register_callback: versioned_schema.register_single_reference
